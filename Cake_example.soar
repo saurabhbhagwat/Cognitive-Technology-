@@ -1,0 +1,23 @@
+##!
+# @file
+#
+# @created sbhagwa3 20200601
+
+wm add I2 ^name echo
+visualize image-type jpg
+visualize architectural-wmes on
+
+sp { proposal*project1
+    ( state <s> ^type state)
+    (<s> ^io.input-link.name <var> )
+    
+-->
+    (<s> ^operator <o> )
+    (<o> ^name <var> )
+    }
+
+sp { apply*project1
+    (state <s> ^operator.name <var>)
+-->
+    (write |The string is: | <var> (crlf) |The length of the string is: | (strlen <var>))
+    (halt)}

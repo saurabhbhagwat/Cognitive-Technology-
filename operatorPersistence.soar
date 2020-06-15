@@ -1,0 +1,28 @@
+##!
+# @file
+#
+# @created sbhagwa3 20200602
+
+wm add I2 ^company Optum
+wm add I2 ^company UHG
+visualize image-type jpg
+visualize architectural-wmes on
+
+sp {propose*company
+(state <s> ^type state)
+(<s> ^io <io>)
+(<io> ^input-link <input>)
+(<input> ^company <var>)
+-->
+(<s> ^operator <o> + =)
+(<o> ^name company)
+(<o> ^value <var>)
+}
+sp {apply*company
+(state <s> ^operator <o>)
+(<o> ^name company)
+(<o> ^value <var>)
+-->
+(write <var>)
+(<s> ^value <var>)
+}

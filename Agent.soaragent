@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soaragent>
+  <startfile path="count&lt;10.soar" />
+  <members>
+    <member path="Cake_example.soar" />
+    <member path="Project1.soar" />
+    <member path="weather.soar" />
+    <member path="operatorPersistence.soar" />
+    <member path="animals.soar" />
+    <member path="count&lt;10.soar" />
+    <member path="Project 2.soar" />
+  </members>
+</soaragent>
+

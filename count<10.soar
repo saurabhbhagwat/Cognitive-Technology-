@@ -1,0 +1,42 @@
+##!
+# @file
+#
+# @created sbhagwa3 20200603
+visualize image-type jpg
+visualize architectural-wmes on
+sp { propose*initialize-count
+    ( state <s> ^type state )
+    -( <s> ^name count)
+-->
+    (<s> ^operator <o> +)
+    (<o> ^name initialize-count)
+    }
+
+sp { apply*initialize-count 
+    (state <s> ^operator <o>)
+    (<o> ^name initialize-count)
+-->
+    (<s> ^name count)
+    (<s> ^count 0) 
+    }
+
+sp { propose*count
+    (state <s> ^count < 10 )
+-->
+    (<s> ^operator <o> +)
+    (<o> ^name count)
+    }
+
+sp { apply*count
+    (state <s> ^operator <o> ^count <count>)
+    (<o> ^name count)
+-->
+    (<s> ^count <count> -)
+    (<s> ^count ( + 1 <count> )) 
+    }
+
+sp { detect*count
+    (state <s> ^count 10)
+-->
+    (halt)
+    }
