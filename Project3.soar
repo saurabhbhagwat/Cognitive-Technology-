@@ -1,0 +1,92 @@
+##!
+# @file
+#
+# @created sbhagwa3 20200616
+visualize image-type jpg
+visualize architectural-wmes on
+
+sp {propose*init
+   (state <s> ^type state)
+   (<s> ^superstate nil)
+   (<s> -^agent)
+-->
+    (<s> ^operator <o> + !)
+    (<o> ^name init)
+    }
+
+sp {apply*init
+    (state <s> ^operator <o>)
+    (<o> ^name init)
+-->
+    (<s> ^agent number)
+    (<s> ^val1 25)
+    (<s> ^val2 10)
+    }
+
+sp { elaboration*addvalues
+    (state <s> ^val1 <val1>)
+    (<s> ^val2 <val2>)
+-->
+    (<s> ^combinedVals ( + <val1> <val2>))  
+    }
+
+sp { propose*greaterthan20
+    (state <s> ^combinedVals <val> > 20)
+-->
+    (<s> ^operator <o> + >)
+    (<o> ^select decrease2)
+    (<o> ^value <val>)
+    } 
+
+sp { apply*greaterthan20
+    (state <s> ^operator <o>)
+    (<o> ^select decrease2)
+    (<o> ^value <val>)
+-->
+    (<s> ^decrease2 ( - <val> 2))
+    (write |Operator decrease2 preferred and selected| (crlf) |Value1 decreased by 2 | (crlf) |New value is: | ( - <val> 2))
+    }
+
+sp { propose*greaterthan0
+    (state <s> ^combinedVals <val> > 0)
+-->
+    (<s> ^operator <o> + >)
+    (<o> ^select decrease1)
+    (<o> ^value <val>)
+    } 
+
+sp { apply*greaterthan0
+    (state <s> ^operator <o>)
+    (<o> ^select decrease1)
+    (<o> ^value <val>)
+-->
+    (<s> ^decrease1 ( - <val> 1))
+    (write |Operator decrease1 preffered and selected| (crlf) |Value1 decreased by 1 | (crlf) |New value is: | ( - <val> 1))
+    }
+
+sp {propose*Substate*impasse
+    (state <s> ^impasse tie)
+    (<s> ^item <o1>)
+    (<o1> ^value <val> > 20)
+    
+-->
+    (<s> ^operator <o> + =)
+    (<o> ^name breakImpasse)
+    (<o> ^value <val>)
+    }
+
+sp {apply*Substate*impasse
+    (state <s> ^operator <o>)
+    (<o> ^name breakImpasse)
+    (<o> ^value <val>)
+    
+    (<s> ^superstate <ss>)
+    (<ss> ^operator <o1> +)
+    (<o1> ^value <val>)
+    (<o1> ^select decrease1)
+    (<ss> ^operator <o2> +)
+    (<o2> ^value <val>)
+    (<o2> ^select decrease2)
+-->
+    (<ss> ^operator <o2> > <o1>)
+    }

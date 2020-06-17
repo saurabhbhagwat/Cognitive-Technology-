@@ -1,0 +1,86 @@
+##!
+# @file
+#
+# @created sbhagwa3 20200615
+visualize image-type jpg
+visualize architectural-wmes on
+sp {propose*accountant*init
+    (state <s> ^type state ^superstate nil)
+    (<s> -^agent)
+-->
+    (<s> ^operator <o> + !)
+    (<o> ^name init)
+    }
+
+sp {apply*accountant*init
+    (state <s> ^operator <o>)
+    (<o> ^name init)
+-->
+    (<s> ^agent accountant)
+    (<s> ^accounts <ac>)
+    (<ac> ^account1 <a1>)
+    (<ac> ^account2 <a2>)
+    (<ac> ^account3 <a3>)
+    (<a1> ^value 50)
+    (<a2> ^value 500)
+    (<a3> ^value 100)
+   }
+
+sp {elaborate*accounts
+    (state <s> ^accounts <ac>)
+    (<ac> ^<account> <acs>)
+    (<acs> ^value <val> > 400)
+-->
+    (<acs> ^ignore true)
+   }
+
+sp {propose*process
+    (state <s> ^accounts <acs>)
+    (<acs> ^<account> <ac>)
+    (<ac> -^ignore) 
+    (<ac> ^value <val>)
+-->
+    (<s> ^operator <o> + >)
+    (<o> ^name process)
+    (<o> ^account <account>)
+    (<o> ^value <val>)
+    }
+
+sp {apply*process
+    (state <s> ^operator <o> ^accounts <ac>)
+    (<o> ^name process)
+    (<o> ^account <account>)
+    (<ac> ^<account> <val>)
+-->
+    (<ac> ^<account> <val> -)
+    (<ac> ^<account> 0) 
+    (write |Processing the account | <account>)
+   }
+
+sp {propose*Substate*breakImpasse
+   (state <s> ^impasse tie) 
+   (<s> ^item <o1>)
+   (<s> ^item <o2>)
+   (<o1> ^value <val1>)
+   (<o2> ^value <val2> > <val1>)
+-->
+    (<s> ^operator <o> + =)
+    (<o> ^name breakImpasse)
+    (<o> ^value1 <val1>)
+    (<o> ^value2 <val2>)
+    }
+
+sp {apply*Substate*breakImpasse
+    (state <s> ^operator <o>)
+    (<o> ^name breakImpasse)
+    (<o> ^value1 <val1>)
+    (<o> ^value2 <val2>)
+    
+    (<s> ^superstate <ss>)
+    (<ss> ^operator <o1> +)
+    (<o1> ^value <val1>)
+    (<ss> ^operator <o2> +)
+    (<o2> ^value <val2>)
+-->
+    (<ss> ^operator <o2> > <o1>)
+    }
