@@ -1,0 +1,114 @@
+##!
+# @file
+#
+# @created sbhagwa3 20200709
+visualize image-type jpg
+visualize architectural-wmes on
+
+smem --set learning on
+
+#initialize semantic memory and working memory with data
+sp { propose*init
+   (state <s> ^type state)
+   (<s> -^init) 
+-->
+    (<s> ^operator <o> + !)
+    (<o> ^name init)
+    }
+
+sp { apply*init
+   (state <s> ^operator <o>)
+   (<o> ^name init)
+   (<s> ^smem.command <cmd>) 
+-->
+    (<s> ^init true)
+    (<food> ^type food)
+    (<food> ^cake 500)
+    (<food> ^banana 50)
+    (<food> ^soda 200)
+    (<food> ^chicken 300)
+    (<cmd> ^store <food>)
+    (<s> ^fridge <fri>)
+    (<fri> ^food soda)
+    (<fri> ^food banana)
+    (<fri> ^food cake)
+    }
+
+#retrieve semantic memory
+sp { propose*smem*cue
+    (state <s> ^type state)
+    (<s> -^cue)
+-->
+    (<s> ^operator <o> + =)
+    (<o> ^name retrieve)
+    }
+
+sp { apply*smem*cue
+    (state <s> ^operator <o>)
+    (<o> ^name retrieve)
+    (<s> ^smem.command <cmd>)
+    #(<s> ^fridge <fri>)
+    #(<fri> ^food <item>)
+-->
+    (<s> ^cue true)
+    (<cmd> ^store.type food)
+    #(<item> ^value <val>)
+    }
+
+#propose operator for each fridge item
+sp { propose*fridge
+   (state <s> ^type state)
+   (<s> ^fridge <fri>)
+   (<fri> ^food <item>) 
+   (<s> ^smem.result.success <list>)
+   (<list> ^<item> <val>)
+-->
+    (<s> ^operator <o> + >)
+    (<o> ^name fridge)
+    (<o> ^food <item>)
+    (<o> ^calorie <val>)
+    }
+
+sp { apply*fridge
+   (state <s> ^operator <o>)
+   (<o> ^name fridge)
+   (<o> ^food <item>)
+   (<o> ^calorie <val>)
+-->
+    (write | Eating | <item>)
+    }
+
+#resolve impasse to choose food with lowest calorie
+sp { propose*Substate*impasse
+   (state <s> ^impasse tie)
+   (<s> ^item <o1>)
+   (<s> ^item <o2>)
+   (<s> ^item <o3>)
+   (<o1> ^value <val1>)
+   (<o2> ^value <val2> < <val1>)
+   (<o3> ^value <val3> < <val2>)
+-->
+    (<s> ^operator <o> + =)
+    (<o> ^name breakImpasse)
+    (<o> ^value1 <val1>)
+    (<o> ^value2 <val2>)
+    (<o> ^value3 <val3>)
+    }
+
+sp { apply*Substate*impasse
+    (state <s> ^operator <o>)
+    (<o> ^name breakImpasse)
+    (<o> ^value1 <val1>)
+    (<o> ^value2 <val2>)
+    (<o> ^value3 <val3>)
+    
+    (<s> ^superstate <ss>)
+    (<ss> ^operator <o1> +)
+    (<ss> ^operator <o2> +)
+    (<ss> ^operator <o3> +)
+    (<o1> ^calorie <val1>)
+    (<o2> ^calorie <val2>)
+    (<o3> ^calorie <val3>)
+-->
+    (<ss> ^operator <o3> > )
+    }
