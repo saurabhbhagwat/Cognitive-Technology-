@@ -6,10 +6,12 @@ visualize image-type jpg
 visualize architectural-wmes on
 
 smem --set learning on
+epmem --set learning on 
 
 #initialize semantic memory and working memory with data
 sp { propose*init
    (state <s> ^type state)
+   (<s> ^superstate nil)
    (<s> -^init) 
 -->
     (<s> ^operator <o> + !)
@@ -22,21 +24,27 @@ sp { apply*init
    (<s> ^smem.command <cmd>) 
 -->
     (<s> ^init true)
+    (<s> ^selected 1)
     (<food> ^type food)
     (<food> ^cake 500)
     (<food> ^banana 50)
     (<food> ^soda 200)
     (<food> ^chicken 300)
+    (<food> ^fish 400)
+    (<food> ^apple 40)
     (<cmd> ^store <food>)
     (<s> ^fridge <fri>)
     (<fri> ^food soda)
     (<fri> ^food banana)
     (<fri> ^food cake)
+    (<fri> ^food chicken)
+    (<fri> ^food fish)
+    (<fri> ^food apple)
     }
 
 #retrieve semantic memory
 sp { propose*smem*cue
-    (state <s> ^type state)
+    (state <s> ^type state ^superstate nil)
     (<s> -^cue)
 -->
     (<s> ^operator <o> + =)
@@ -57,8 +65,10 @@ sp { apply*smem*cue
 
 #propose operator for each fridge item
 sp { propose*fridge
-   (state <s> ^type state)
+   (state <s> ^type state ^superstate nil)
+   #(<s> ^selected <count>)
    (<s> ^fridge <fri>)
+   #(<fri> -^food)
    (<fri> ^food <item>) 
    (<s> ^smem.result.success <list>)
    (<list> ^<item> <val>)
@@ -66,16 +76,23 @@ sp { propose*fridge
     (<s> ^operator <o> + >)
     (<o> ^name fridge)
     (<o> ^food <item>)
-    (<o> ^calorie <val>)
+    (<o> ^value <val>)
+    #(<o> ^selected ( + <count> 1 ))
     }
 
 sp { apply*fridge
-   (state <s> ^operator <o>)
+   (state <s> ^operator <o> ^fridge <fri>)
    (<o> ^name fridge)
    (<o> ^food <item>)
-   (<o> ^calorie <val>)
+   (<o> ^value <val>)
+   (<s> ^selected <count>)
+   (<fri> ^food <item>)
 -->
-    (write | Eating | <item>)
+    (<fri> ^food <item> -)
+    (<s> ^selected <count> -)
+    (<s> ^selected (+ <count> 1))
+    (<s> ^<item> <count>)
+    (write | Eating | <item> | Calorie | <val>)
     }
 
 #resolve impasse to choose food with lowest calorie
@@ -83,16 +100,17 @@ sp { propose*Substate*impasse
    (state <s> ^impasse tie)
    (<s> ^item <o1>)
    (<s> ^item <o2>)
-   (<s> ^item <o3>)
+   #(<s> ^item <o3>)
    (<o1> ^value <val1>)
-   (<o2> ^value <val2> < <val1>)
-   (<o3> ^value <val3> < <val2>)
+   (<o2> ^value <val2> > <val1>)
+   #(<o3> ^value <val3> < <val2>)
+   
 -->
     (<s> ^operator <o> + =)
     (<o> ^name breakImpasse)
     (<o> ^value1 <val1>)
     (<o> ^value2 <val2>)
-    (<o> ^value3 <val3>)
+    #(<o> ^value3 <val3>)
     }
 
 sp { apply*Substate*impasse
@@ -100,15 +118,51 @@ sp { apply*Substate*impasse
     (<o> ^name breakImpasse)
     (<o> ^value1 <val1>)
     (<o> ^value2 <val2>)
-    (<o> ^value3 <val3>)
+    #(<o> ^value3 <val3>)
     
     (<s> ^superstate <ss>)
     (<ss> ^operator <o1> +)
     (<ss> ^operator <o2> +)
-    (<ss> ^operator <o3> +)
-    (<o1> ^calorie <val1>)
-    (<o2> ^calorie <val2>)
-    (<o3> ^calorie <val3>)
+    #(<ss> ^operator <o3> +)
+    (<o1> ^value <val1>)
+    (<o2> ^value <val2>)
+    #(<o3> ^calorie <val3>)
 -->
-    (<ss> ^operator <o3> > )
+    (<ss> ^operator <o1> > <o2>)
     }
+
+sp { propose*episodic*retrieve
+    (state <s> ^type state ^superstate nil)
+    #(<s> ^epmem.command.retrieve <cmd>)
+    #(<cmd> ^food <item>)
+    (<s> -^pull)
+-->
+    (<s> ^operator <o> + =)
+    (<o> ^name episodicretrieve)
+    #(<o> ^retrieved <item>)
+    }
+
+sp { apply*episodic*retrieve
+    (state <s> ^operator <o>)
+    (<o> ^name episodicretrieve)
+    (<s> ^epmem.command <cmd>)
+    #(<cmd> ^result.retrieved.fridge.food <item>)
+-->
+    (<s> ^pull true)
+    #(<cmd> ^query <query>)
+    (<cmd> ^retrieve 1)
+    #(<cmd> ^query <query>)
+    #(<query> ^food <item>)
+    #(write |Episodic retrieve item | <item>)
+    #(halt) 
+    }
+
+sp { display*result
+    (state <s> ^type state ^superstate nil)
+    (<s> ^epmem.result.retrieved.fridge.food <item>)
+    (<s> ^<item> 1)
+-->
+    (write | First Deleted item was | <item> )
+    (halt)
+    }
+
