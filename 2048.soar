@@ -1,0 +1,123 @@
+##!
+# @file
+#
+# @created sbhagwa3 20200829
+visualize image-type jpg
+visualize architectural-wmes on
+
+smem --set learning on
+epmem --set learning on 
+rl -s learning on
+
+#CLEAN Output Link
+sp {top*apply*cleanupOutput
+    (state <s> ^operator <op>
+               ^superstate nil
+               ^io.output-link <out>)
+    (<out> ^<cmd> <id>)
+    (<id> ^direction <dir>)
+    (<id> ^status <st>) 
+-->
+    (<out> ^<cmd> <id> -)
+    (write (crlf) |<<< Clearing >>>| )
+}
+
+sp {propose*move-up
+    (state <s> ^type state)
+    (<s> ^io.input-link <input>)
+    (<input> ^block1 <block>)
+    (<s> ^leftcornerzero false)
+-->
+    (<s> ^operator <o> + = 0.9)
+    (<o> ^name move-up)
+}
+
+sp {apply*move-up
+    (state <s> ^operator <o>
+               ^io <io>)
+    (<io> ^output-link <out>)
+    (<o> ^name move-up)
+-->
+    (write (crlf) |up|)
+    (<out> ^otherlink <ot>)
+    (<ot> ^direction u)
+}
+
+sp {propose*move-left
+    (state <s> ^type state)
+    (<s> ^io.input-link <input>)
+    (<input> ^block1 <block>)
+    (<s> ^leftcornerzero true)
+-->
+    (<s> ^operator <o> + = 0.7)
+    (<o> ^name move-left)
+}
+
+sp {apply*move-left
+    (state <s> ^operator <o>
+               ^io <io>)
+    (<io> ^output-link <out>)
+    (<o> ^name move-left)
+-->
+    (write (crlf) |left|)
+    (<out> ^otherlink <ot>)
+    (<ot> ^direction l)
+}
+
+sp {propose*move-down
+    (state <s> ^type state)
+    (<s> ^io.input-link <input>)
+    (<input> ^block1 <block>)
+-->
+    (<s> ^operator <o> + = 0.1)
+    (<o> ^name move-down)
+}
+
+sp {apply*move-down
+    (state <s> ^operator <o>
+               ^io <io>)
+    (<io> ^output-link <out>)
+    (<o> ^name move-down)
+-->
+    (write (crlf) |down|)
+    (<out> ^otherlink <ot>)
+    (<ot> ^direction d)
+}
+
+sp {propose*move-right
+    (state <s> ^type state)
+    (<s> ^io.input-link <input>)
+    (<input> ^block1 <block>)
+-->
+    (<s> ^operator <o> + = 0.3)
+    (<o> ^name move-right)
+}
+
+sp {apply*move-right
+    (state <s> ^operator <o>
+               ^io <io>)
+    (<io> ^output-link <out>)
+    (<o> ^name move-right)
+-->
+    (write (crlf) |right|)
+    (<out> ^otherlink <ot>)
+    (<ot> ^direction r)
+}
+
+sp { elaborate*upperleft*corner*zero
+    (state <s> ^type state)
+    (<s> ^io.input-link <input>)
+    (<input> ^block0.name block0-0)
+    (<input> ^block0.value 0)
+-->
+    (<s> ^leftcornerzero true)
+    }
+
+sp { elaborate*upperleft*corner*notzero
+    (state <s> ^type state)
+    (<s> ^io.input-link <input>)
+    (<input> ^block0.name block0-0)
+    (<input> -^block0.value 0)
+-->
+    (<s> ^leftcornerzero false)
+    }
